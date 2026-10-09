@@ -1,8 +1,9 @@
-mod commands;
-#[cfg(windows)]
 mod cleanup;
+mod commands;
+mod display;
 mod inject;
 mod launcher;
+mod model;
 mod plugins;
 mod process_guard;
 mod segatools;
@@ -17,10 +18,11 @@ pub fn run() {
         .plugin(tauri_plugin_dialog::init())
         .manage(commands::LauncherState::default())
         .invoke_handler(tauri::generate_handler![
-            commands::launch_game,
-            commands::stop_game,
-            commands::is_running,
-            commands::list_plugin_dlls
+            commands::game::launch_game,
+            commands::game::stop_game,
+            commands::game::is_running,
+            commands::plugins::list_plugin_dlls,
+            commands::display::list_monitors
         ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");

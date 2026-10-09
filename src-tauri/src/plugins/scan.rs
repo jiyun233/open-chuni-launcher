@@ -1,45 +1,12 @@
 use std::collections::BTreeMap;
+use std::fs;
 use std::path::{Path, PathBuf};
-use std::{fs};
 
 use base64::Engine as _;
-use serde::{Deserialize, Serialize};
 use serde_json::Value;
 use tauri::{AppHandle, Manager};
 
-#[derive(Deserialize, Default)]
-#[serde(default)]
-struct PluginManifest {
-    name: Option<String>,
-    description: Option<String>,
-    icon: Option<String>,
-    version: Option<String>,
-    author: Option<String>,
-}
-
-#[derive(Deserialize, Default)]
-#[serde(default)]
-struct PluginLocaleOverrides {
-    name: Option<String>,
-    description: Option<String>,
-}
-
-#[derive(Serialize)]
-#[serde(rename_all = "camelCase")]
-pub struct PluginInfo {
-    pub file: String,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub version: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub author: Option<String>,
-    pub path: String,
-    pub icon_data_url: Option<String>,
-    pub has_manifest: bool,
-}
+use crate::model::plugin::{PluginInfo, PluginLocaleOverrides, PluginManifest};
 
 pub fn plugins_dir(app: &AppHandle) -> Option<PathBuf> {
     if let Ok(resource_dir) = app.path().resource_dir() {

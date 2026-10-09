@@ -16,6 +16,8 @@ import type {
   Io3Config,
   VfsConfig,
 } from "@/lib/segatools";
+import { DEFAULT_DISPLAY } from "@/lib/display";
+import type { DisplayConfig } from "@/lib/display";
 import { useNotifications } from "@/composables/useNotifications";
 import { useI18n } from "@/i18n";
 
@@ -28,6 +30,7 @@ export interface AppSettings {
   vfs: VfsConfig;
   gpio: GpioConfig;
   gfx: GfxConfig;
+  display: DisplayConfig;
   aime: AimeConfig;
   io3: Io3Config;
 }
@@ -41,6 +44,7 @@ const DEFAULTS: AppSettings = {
   vfs: DEFAULT_VFS,
   gpio: DEFAULT_GPIO,
   gfx: DEFAULT_GFX,
+  display: DEFAULT_DISPLAY,
   aime: DEFAULT_AIME,
   io3: DEFAULT_IO3,
 };
@@ -63,7 +67,7 @@ function load(): AppSettings {
       return { ...DEFAULTS, plugins: loadPlugins() };
     }
     const { gameDlls, plugins, ...savedSettings } = stored;
-    return {
+    const merged: AppSettings = {
       ...DEFAULTS,
       ...savedSettings,
       plugins: loadPlugins(plugins, gameDlls),
@@ -71,9 +75,18 @@ function load(): AppSettings {
       vfs: mergeConfig(DEFAULTS.vfs, savedSettings.vfs),
       gpio: mergeConfig(DEFAULTS.gpio, savedSettings.gpio),
       gfx: mergeConfig(DEFAULTS.gfx, savedSettings.gfx),
+      display: mergeConfig(DEFAULTS.display, savedSettings.display),
       aime: mergeConfig(DEFAULTS.aime, savedSettings.aime),
       io3: mergeConfig(DEFAULTS.io3, savedSettings.io3),
     };
+    // 旧版存档的显示器编号存于 gfx.monitor，迁移到 display.monitor
+    if (savedSettings.display === undefined) {
+      const legacyMonitor = (savedSettings.gfx as { monitor?: unknown } | undefined)?.monitor;
+      if (typeof legacyMonitor === "number" && legacyMonitor > 0) {
+        merged.display.monitor = legacyMonitor;
+      }
+    }
+    return merged;
   } catch (error) {
     useNotifications().notifyError(error, useI18n().t("notifications.settingsLoadError"));
     return { ...DEFAULTS, plugins: loadPlugins() };

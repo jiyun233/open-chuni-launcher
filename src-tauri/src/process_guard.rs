@@ -1,4 +1,3 @@
-/// 非 Windows 平台没有作业对象可挂，保持无操作
 #[cfg(not(windows))]
 pub fn setup() {}
 

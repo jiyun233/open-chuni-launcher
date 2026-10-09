@@ -31,26 +31,52 @@ Rust: snake_case throughout; the lib name keeps the `_lib` suffix (Windows bin/l
 src/
   components/
     layout/   AppSidebar (nav shell)
-    pages/    HomePage, PluginsPage, LogsPage, SettingsPage  (matched by id in lib/navigation.ts)
     settings/ SettingCard + controls/ (per-control-type wrappers)
-    ui/       shadcn-vue components (button, input, number-field, select, tooltip)
-  composables/  useTheme, useSettings
+    ui/       shadcn-vue components (button, input, number-field, select, switch, tooltip)
+  pages/      HomePage, ConfigPage, DisplayPage, PluginsPage, LogsPage, SettingsPage  (matched by id in lib/navigation.ts)
+  composables/  useTheme, useSettings, useLaunch, useNotifications
   i18n/         useI18n + .lang parser
-  lib/          themes.ts, navigation.ts, utils.ts (cn)
+  lib/          themes.ts, navigation.ts, display.ts, segatools.ts, utils.ts (cn)
   locales/      *.lang files (one per locale)
   styles/       tokens / base / layout / sidebar / settings / form / overlay
 src-tauri/
-  src/
-    lib.rs      Builder、插件注册、命令注册
-    commands.rs 前端命令（launch_game 阻塞至游戏退出、stop_game、list_plugin_dlls）+ 运行状态
-    launcher.rs 启动流程编排（清理 → amdaemon → 游戏 → 清理，对应原 bat 时序；每条命令只 spawn 一次）
-    cleanup.rs  启动时清理遗留的启动器实例与 WebView2 残留进程（按 bundle identifier 匹配命令行，防数据目录被锁）
-    process_guard.rs Windows 作业对象（KILL_ON_JOB_CLOSE）：启动器以任何方式退出都连带结束全部子进程
-    inject.rs   注入解耦：把「注入器 + 目标 + DLL 清单」组装成命令行（支持绝对路径）
-    plugins.rs  内置插件：扫描打包的插件目录、解析同名 JSON 清单、图标转 data URL
+  src/            （按 model 纯数据层 → 领域模块 → commands 薄层 组织）
+    main.rs / lib.rs  入口；lib.rs 只做模块声明、Tauri Builder 与命令注册
+    model/            跨模块纯数据类型层：serde DTO 与常量，零业务逻辑，不依赖任何领域模块
+      display.rs        DisplayModeInfo、MonitorInfo
+      inject.rs         InjectSpec、BuiltInjection
+      launch.rs         LaunchReport、BuiltinPluginSource、DisplayModeRequest
+      plugin.rs         PluginInfo、PluginManifest、PluginLocaleOverrides
+      segatools.rs      SegatoolsPatch 及各节 Patch、IniEntry、SectionPatch（含 sections() 映射）
+    commands/         Tauri 命令层（薄封装）：参数校验、运行状态、事件桥接，编排委托给领域模块
+      types.rs          LauncherState（运行状态）、TauriSessionEvents（SessionEvent → launch://log、launch://state 桥接）
+      game.rs           launch_game（阻塞至游戏退出）、stop_game、is_running
+      display.rs        list_monitors
+      plugins.rs        list_plugin_dlls
+    launcher/         启动域（不依赖 tauri，会话事件走 SessionEvent 回调）
+      types.rs          常量：amdaemon / chusanApp / 注入器文件名、bin 目录、OPENSSL_ia32cap
+      process.rs        进程原语：taskkill 查杀、tasklist 探测、命令风格化、子进程输出逐行转发
+      spawn.rs          amdaemon / 游戏 InjectSpec 组装与 spawn（每条命令只 spawn 一次）
+      session.rs        SessionEvent trait + run_session 编排（清理 → segatools 补丁 → 切显示模式 → 启动 → 等待退出 → 恢复）
+    display/          显示器域（Windows 走 GDI；非 Windows 返回空列表 / 报错）
+      enumerate.rs      list_monitors：EnumDisplayDevices + EnumDisplaySettings；编号对齐 segatools [gfx] monitor（0 = 主显示器，紧凑递增）
+      mode.rs           apply_mode（CDS_TEST 预检 → CDS_FULLSCREEN 切换）+ DisplayGuard（restore() / Drop 兜底还原原模式）
+    segatools/        segatools.ini 补丁（ini.rs：按节替换受管键，保留注释与其余内容）
+    inject/           注入器命令行组装（支持绝对路径 DLL，缺失 DLL 记入 missing_dlls）
+    plugins/          内置插件扫描（scan.rs：清单、`<name>.<locale>.json` 语言覆盖、图标转 data URL）
+    cleanup.rs        启动时清理遗留的启动器实例与 WebView2 残留进程（Windows，按 bundle identifier 匹配命令行，防数据目录被锁）
+    process_guard.rs  Windows 作业对象（KILL_ON_JOB_CLOSE）：启动器以任何方式退出都连带结束全部子进程
   plugins/      内置插件目录（每插件一个文件夹：DLL + 英文默认清单 + `<name>.<locale>.json` 语言覆盖 + 图标，经 bundle.resources 打包）
   （capabilities/ 权限、icons/ 图标、tauri.conf.json 配置）
 ```
+
+### Rust 分层约定
+
+1. **类型与逻辑分离**：跨模块共享的结构体/枚举/常量一律放 `model/`（纯数据，零逻辑依赖）；模块私有的辅助结构体（如 `IniSection`、`StaleMarkers`）留在实现文件，不进 model。
+2. **依赖方向**：`commands → 领域模块（launcher/display/segatools/inject/plugins）→ model`；领域模块之间只经公开 API 调用，禁止反向依赖 commands。
+3. **领域模块不依赖 tauri**：launcher 经 `SessionEvent` 回调输出日志与运行状态，由 `commands/types.rs` 的 `TauriSessionEvents` 桥接为 Tauri 事件；领域模块新增对外输出同样走 trait 回调。
+4. **新增命令**：在 `commands/` 对应子模块写 `#[tauri::command]` 函数，`lib.rs` 的 `generate_handler!` 必须用**定义路径**注册（如 `commands::game::launch_game`；re-export 路径会找不到 `__cmd__` 宏），需要权限时在 `capabilities/default.json` 添加。
+5. **mod.rs 只做装配**：每个领域目录的 `mod.rs` 仅声明子模块并 re-export；对外 re-export 保持最小集合，未被使用的 re-export 会触发 unused 警告。
 
 ## CSS architecture (Tailwind CSS v4)
 

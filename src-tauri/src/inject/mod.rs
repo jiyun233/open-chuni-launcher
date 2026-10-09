@@ -1,17 +1,7 @@
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-pub struct InjectSpec {
-    pub injector: &'static str,
-    pub exe: String,
-    pub dlls: Vec<String>,
-    pub target_args: Vec<String>,
-}
-
-pub struct BuiltInjection {
-    pub command: Command,
-    pub missing_dlls: Vec<String>,
-}
+use crate::model::inject::{BuiltInjection, InjectSpec};
 
 fn resolve_dll(bin_dir: &Path, dll: &str) -> PathBuf {
     let path = Path::new(dll);

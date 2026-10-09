@@ -3,6 +3,8 @@ language.name=简体中文
 
 # 导航
 nav.home=首页
+nav.config=配置
+nav.display=显示器
 nav.plugins=插件
 nav.logs=日志
 nav.settings=设置
@@ -27,7 +29,7 @@ config.server.aimedb=AimeDB 服务器（可选）
 config.server.aimedbHint=大多数服务器不需要配置 AimeDB
 config.keychip.title=机台编号
 config.keychip.placeholder=A60E-01A88888888
-config.keychip.invalid=机台编号未填写或格式不正确，无法启动游戏
+config.keychip.invalid=机台编号未填写，无法启动游戏
 
 # 配置 — 显示模式
 config.display.title=显示模式
@@ -63,8 +65,27 @@ config.window.framed.title=窗口边框
 config.window.framed.description=窗口模式下是否添加边框
 config.window.framed.off=无边框
 config.window.framed.on=有边框
-config.window.monitor.title=显示器
-config.window.monitor.description=全屏时使用的显示器，0 = 主显示器
+
+# 显示器页
+display.section.monitor=显示器
+display.section.adjust=启动时切换显示模式
+display.monitor.title=游戏显示器
+display.monitor.description=游戏全屏时使用的显示器，编号写入 segatools.ini 的 [gfx] monitor，0 = 主显示器
+display.monitor.primary=主显示器
+display.info.title=当前显示模式
+display.info.device=设备：{device}
+display.info.hint={width} × {height} @ {refresh} Hz
+display.adjust.title=启动前切换显示模式
+display.adjust.description=启动游戏前将所选显示器切换到下方分辨率与刷新率，游戏退出后自动恢复原设置
+display.adjust.resolution.title=分辨率
+display.adjust.resolution.description=启动游戏时应用的分辨率
+display.adjust.refresh.title=刷新率
+display.adjust.refresh.description=启动游戏时应用的刷新率，仅列出所选分辨率支持的值
+display.loading=正在读取显示器信息…
+display.loadError=显示器信息读取失败
+display.retry=重试
+display.empty=未检测到显示器
+display.desktopOnly=显示器信息需要在桌面应用中读取
 
 # 配置 — 目录与读卡器
 config.vfs.option.title=Option 目录

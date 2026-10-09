@@ -8,6 +8,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { cn } from "@/lib/utils";
 
 export interface SelectOption {
   value: string;
@@ -17,7 +18,7 @@ export interface SelectOption {
 
 const model = defineModel<string>({ required: true });
 
-const props = defineProps<{ options: SelectOption[] }>();
+const props = defineProps<{ options: SelectOption[]; class?: string }>();
 
 const selectedLabel = computed(
   () => props.options.find((option) => option.value === model.value)?.label ?? "",
@@ -26,7 +27,7 @@ const selectedLabel = computed(
 
 <template>
   <Select v-model="model">
-    <SelectTrigger class="w-44">
+    <SelectTrigger :class="cn('w-44', props.class)">
       <SelectValue>{{ selectedLabel }}</SelectValue>
     </SelectTrigger>
     <SelectContent>

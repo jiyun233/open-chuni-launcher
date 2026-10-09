@@ -3,6 +3,8 @@ language.name=English
 
 # Navigation
 nav.home=Home
+nav.config=Config
+nav.display=Display
 nav.plugins=Plugins
 nav.logs=Logs
 nav.settings=Settings
@@ -27,7 +29,7 @@ config.server.aimedb=AimeDB server (optional)
 config.server.aimedbHint=Most servers do not need an AimeDB entry
 config.keychip.title=Keychip
 config.keychip.placeholder=A60E-01A88888888
-config.keychip.invalid=Keychip is missing or malformed — cannot launch the game
+config.keychip.invalid=Keychip is missing — cannot launch the game
 
 # Config — display mode
 config.display.title=Display mode
@@ -63,8 +65,27 @@ config.window.framed.title=Window frame
 config.window.framed.description=Add a frame when running windowed
 config.window.framed.off=No frame
 config.window.framed.on=Frame
-config.window.monitor.title=Monitor
-config.window.monitor.description=Monitor to use in fullscreen, 0 = primary screen
+
+# Display page
+display.section.monitor=Display
+display.section.adjust=Switch display mode on launch
+display.monitor.title=Game monitor
+display.monitor.description=Monitor used by the game in fullscreen; the index is written to [gfx] monitor in segatools.ini, 0 = primary screen
+display.monitor.primary=Primary
+display.info.title=Current display mode
+display.info.device=Device: {device}
+display.info.hint={width} × {height} @ {refresh} Hz
+display.adjust.title=Switch display mode before launch
+display.adjust.description=Switches the selected monitor to the resolution and refresh rate below before the game starts; original settings are restored when the game exits
+display.adjust.resolution.title=Resolution
+display.adjust.resolution.description=Resolution applied when the game launches
+display.adjust.refresh.title=Refresh rate
+display.adjust.refresh.description=Refresh rate applied when the game launches; only modes supported by the chosen resolution are listed
+display.loading=Loading display information…
+display.loadError=Failed to load display information
+display.retry=Retry
+display.empty=No display detected
+display.desktopOnly=Display information is available in the desktop application
 
 # Config — directories and card reader
 config.vfs.option.title=Option directory

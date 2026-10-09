@@ -1,5 +1,5 @@
 import type { Component } from "vue";
-import { House, Puzzle, ScrollText, Server, Settings } from "@lucide/vue";
+import { House, Monitor, Puzzle, ScrollText, Server, Settings } from "@lucide/vue";
 
 export interface NavSection {
   id: string;
@@ -11,6 +11,7 @@ export interface NavSection {
 export const navSections: NavSection[] = [
   { id: "home", labelKey: "nav.home", icon: House },
   { id: "config", labelKey: "nav.config", icon: Server },
+  { id: "display", labelKey: "nav.display", icon: Monitor },
   { id: "plugins", labelKey: "nav.plugins", icon: Puzzle },
   { id: "logs", labelKey: "nav.logs", icon: ScrollText },
   { id: "settings", labelKey: "nav.settings", icon: Settings },

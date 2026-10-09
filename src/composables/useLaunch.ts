@@ -101,7 +101,17 @@ export function useLaunch() {
           settings.value.gfx,
           settings.value.aime,
           settings.value.io3,
+          settings.value.display,
         ),
+        // 启动前切换显示模式（关闭或分辨率未指定时为 null）
+        display: settings.value.display.enabled
+          ? {
+              monitor: settings.value.display.monitor,
+              width: settings.value.display.width,
+              height: settings.value.display.height,
+              refreshRate: settings.value.display.refreshRate,
+            }
+          : null,
         launchTimeoutSecs: settings.value.launchTimeoutSeconds,
       });
       if (report.missing_dlls.length > 0) {

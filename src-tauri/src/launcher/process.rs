@@ -1,53 +1,7 @@
 use std::io::{BufRead, BufReader, Read};
-use std::path::{Path, PathBuf};
 use std::process::{Command, Stdio};
 
-use crate::inject::{build_command, InjectSpec};
-
-pub const AMDAEMON_EXE: &str = "amdaemon.exe";
-pub const GAME_EXE: &str = "chusanApp.exe";
-pub const GAME_INJECTOR_X86: &str = "inject_x86.exe";
-pub const BIN_DIR: &str = "bin";
-
-const OPENSSL_IA32CAP: &str = ":~0x20000000";
-
-pub fn resolve_bin_dir(game_root: &Path) -> PathBuf {
-    let bin = game_root.join(BIN_DIR);
-    if bin.is_dir() {
-        bin
-    } else {
-        game_root.to_path_buf()
-    }
-}
-
-fn amdaemon_spec() -> InjectSpec {
-    InjectSpec {
-        injector: "inject_x64.exe",
-        exe: AMDAEMON_EXE.to_string(),
-        dlls: vec!["chusanamhook.dll".to_string()],
-        target_args: [
-            "-f",
-            "-c",
-            "config_common.json",
-            "config_server.json",
-            "config_client.json",
-            "config_cvt.json",
-            "config_sp.json",
-            "config_hook.json",
-        ]
-        .map(String::from)
-        .to_vec(),
-    }
-}
-
-fn game_spec(dlls: Vec<String>) -> InjectSpec {
-    InjectSpec {
-        injector: GAME_INJECTOR_X86,
-        exe: GAME_EXE.to_string(),
-        dlls,
-        target_args: vec![],
-    }
-}
+use super::types::OPENSSL_IA32CAP;
 
 fn stylize(command: &mut Command) {
     command.env("OPENSSL_ia32cap", OPENSSL_IA32CAP);
@@ -78,29 +32,7 @@ pub fn process_exists(image: &str) -> bool {
         .contains(&image.to_lowercase())
 }
 
-pub fn spawn_amdaemon(
-    bin_dir: &Path,
-    on_line: impl Fn(&str) + Send + Sync + Clone + 'static,
-) -> Result<(), String> {
-    let mut built = build_command(bin_dir, &amdaemon_spec());
-    spawn_logged(&mut built.command, "amdaemon", on_line)
-        .map_err(|error| format!("启动 amdaemon 失败：{error}"))
-}
-
-pub fn spawn_game(
-    bin_dir: &Path,
-    dlls: Vec<String>,
-    on_line: impl Fn(&str) + Send + Sync + Clone + 'static,
-) -> Result<Vec<String>, String> {
-    let mut built = build_command(bin_dir, &game_spec(dlls));
-    spawn_logged(&mut built.command, "game", on_line)
-        .map_err(|error| format!("启动游戏失败：{error}"))?;
-    Ok(built.missing_dlls)
-}
-
-/// 只 spawn 一次进程并把 stdout/stderr 转发为日志；
-/// 进程随启动器挂在作业对象上，启动器退出时由系统连带结束
-fn spawn_logged(
+pub(super) fn spawn_logged(
     command: &mut Command,
     source: &'static str,
     on_line: impl Fn(&str) + Send + Sync + Clone + 'static,

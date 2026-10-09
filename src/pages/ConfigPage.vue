@@ -19,14 +19,14 @@ import {
 } from "@lucide/vue";
 import SettingCard from "@/components/settings/SettingCard.vue";
 import SettingKey from "@/components/settings/controls/SettingKey.vue";
-import SettingNumber from "@/components/settings/controls/SettingNumber.vue";
 import SettingPath from "@/components/settings/controls/SettingPath.vue";
 import SettingSelect from "@/components/settings/controls/SettingSelect.vue";
 import SettingSwitch from "@/components/settings/controls/SettingSwitch.vue";
 import { Input } from "@/components/ui/input";
 import { useSettings } from "@/composables/useSettings";
 import { useI18n } from "@/i18n";
-import { isValidKeychip, SERVER_PRESETS } from "@/lib/servers";
+import { SERVER_PRESETS } from "@/lib/servers";
+
 import { DISPLAY_MODE_PRESETS, WINDOW_MODE_PRESETS } from "@/lib/segatools";
 
 const { t } = useI18n();
@@ -92,12 +92,6 @@ const framed = computed<string>({
     settings.value.gfx.framed = Number(value);
   },
 });
-
-const keychipInvalid = computed(
-  () =>
-    settings.value.server.keychip.trim() !== "" &&
-    !isValidKeychip(settings.value.server.keychip),
-);
 </script>
 
 <template>
@@ -153,12 +147,7 @@ const keychipInvalid = computed(
             v-model="settings.server.keychip"
             class="font-mono"
             :placeholder="t('config.keychip.placeholder')"
-            :aria-invalid="keychipInvalid"
-            :class="keychipInvalid ? 'border-destructive' : ''"
           />
-          <p v-if="keychipInvalid" class="text-xs text-destructive">
-            {{ t("config.keychip.invalid") }}
-          </p>
         </div>
       </div>
     </section>
@@ -238,13 +227,6 @@ const keychipInvalid = computed(
             v-model="framed"
             :options="binaryOptions('config.window.framed.off', 'config.window.framed.on')"
           />
-        </SettingCard>
-        <SettingCard
-          :icon="Monitor"
-          :title="t('config.window.monitor.title')"
-          :description="t('config.window.monitor.description')"
-        >
-          <SettingNumber v-model="settings.gfx.monitor" :min="0" />
         </SettingCard>
       </template>
     </section>

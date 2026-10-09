@@ -24,12 +24,6 @@ export const SERVER_PRESETS: ServerPreset[] = [
   },
 ];
 
-const KEYCHIP_PATTERN = /^A\d{2}([EX])-(01|20)[ABCDU]\d{8}$/;
-
-export function isValidKeychip(value: string): boolean {
-  return KEYCHIP_PATTERN.test(value.trim());
-}
-
 export interface ResolvedServerDns {
   dnsDefault: string;
   dnsAimeDb?: string;
@@ -51,7 +45,8 @@ export function validateServerConfig(config: ServerConfig): string | undefined {
   if (config.preset === "custom" && !config.customDns.trim()) {
     return "config.server.dnsRequired";
   }
-  if (!isValidKeychip(config.keychip)) {
+  // 机台编号不做格式校验，只要不为空即可
+  if (!config.keychip.trim()) {
     return "config.keychip.invalid";
   }
   return undefined;

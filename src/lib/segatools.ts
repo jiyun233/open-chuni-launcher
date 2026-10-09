@@ -1,5 +1,6 @@
 import type { ServerConfig } from "@/lib/servers";
 import { resolveServerDns } from "@/lib/servers";
+import type { DisplayConfig } from "@/lib/display";
 
 export interface VfsConfig {
   option: string;
@@ -59,39 +60,35 @@ export interface WindowModePreset {
   id: Exclude<WindowModeId, "custom">;
   windowed: number;
   framed: number;
-  monitor: number;
 }
 
 export const WINDOW_MODE_PRESETS: WindowModePreset[] = [
-  { id: "fullscreen", windowed: 0, framed: 0, monitor: 0 },
-  { id: "borderless", windowed: 1, framed: 0, monitor: 0 },
-  { id: "windowed", windowed: 1, framed: 1, monitor: 0 },
+  { id: "fullscreen", windowed: 0, framed: 0 },
+  { id: "borderless", windowed: 1, framed: 0 },
+  { id: "windowed", windowed: 1, framed: 1 },
 ];
 
 export interface GfxConfig {
   preset: WindowModeId;
   windowed: number;
   framed: number;
-  monitor: number;
 }
 
 export const DEFAULT_GFX: GfxConfig = {
   preset: "fullscreen",
   windowed: 0,
   framed: 0,
-  monitor: 0,
 };
 
 export function resolveGfx(config: GfxConfig): {
   windowed: number;
   framed: number;
-  monitor: number;
 } {
   const preset = WINDOW_MODE_PRESETS.find((item) => item.id === config.preset);
   if (config.preset !== "custom" && preset) {
-    return { windowed: preset.windowed, framed: preset.framed, monitor: preset.monitor };
+    return { windowed: preset.windowed, framed: preset.framed };
   }
-  return { windowed: config.windowed, framed: config.framed, monitor: config.monitor };
+  return { windowed: config.windowed, framed: config.framed };
 }
 
 export interface AimeConfig {
@@ -129,6 +126,7 @@ export function buildSegatoolsPatch(
   gfx: GfxConfig,
   aime: AimeConfig,
   io3: Io3Config,
+  display: DisplayConfig,
 ): SegatoolsPatch {
   const dns = resolveServerDns(server);
   const gpioValues = resolveGpio(gpio);
@@ -146,7 +144,8 @@ export function buildSegatoolsPatch(
       appdata: vfs.appdata.trim(),
     },
     gpio: gpioValues,
-    gfx: gfxValues,
+    // 显示器编号统一由显示器页的 display.monitor 提供
+    gfx: { ...gfxValues, monitor: display.monitor },
     aime: { enable: aime.enable },
     io3: {
       test: io3.test.trim(),
