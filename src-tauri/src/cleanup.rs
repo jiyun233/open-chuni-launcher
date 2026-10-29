@@ -9,7 +9,13 @@ const STALE_POLL_INTERVAL: Duration = Duration::from_millis(200);
 
 pub fn remove_stale() {
     let markers = StaleMarkers::collect();
-    let mut system = System::new_all();
+    let mut system = match System::new_all() {
+        Ok(s) => s,
+        Err(e) => {
+            eprintln!("初始化系统信息失败: {}", e);
+            return;
+        }
+    };
     if kill_stale(&system, &markers) == 0 {
         return;
     }
