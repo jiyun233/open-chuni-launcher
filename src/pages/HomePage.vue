@@ -15,7 +15,6 @@ const { running, launch, stop } = useLaunch();
       <h2 class="text-2xl font-semibold tracking-tight">Open Chunithm Launcher</h2>
     </div>
 
-    <!-- 启动控制：固定在右下角 -->
     <div class="absolute bottom-8 right-8 flex items-center gap-3">
       <Button
         v-if="running"

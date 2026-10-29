@@ -80,7 +80,7 @@ function capture(event: KeyboardEvent) {
   if (["Shift", "Control", "Alt", "Meta"].includes(event.key)) return;
   const code = toVirtualKeyCode(event.code);
   if (code) {
-    model.value = `0x${code.toString(16).toUpperCase().padStart(2, "0")}`;
+    model.value = `${event.key} (0x${code.toString(16).toUpperCase().padStart(2, "0")})`;
     recording.value = false;
     button.value?.blur();
   }

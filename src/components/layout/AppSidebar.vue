@@ -24,8 +24,6 @@ const narrow = ref(mediaQuery.matches);
 
 const collapsed = computed(() => manualCollapsed.value || narrow.value);
 
-// 导航按钮样式：折叠时收为居中的正方形图标按钮，展开时左对齐并留出文字空间。
-// 必须经 cn()/tw-merge 覆盖按钮变体自带的工具类，所以放在模板侧而非 CSS 层。
 const sidebarItemClass = computed(() =>
   collapsed.value
     ? "w-8 justify-center gap-0 px-0 text-sidebar-foreground/80 hover:bg-sidebar-accent hover:text-sidebar-foreground"
@@ -49,8 +47,6 @@ onBeforeUnmount(() => mediaQuery.removeEventListener("change", onNarrowChange));
 </script>
 
 <template>
-  <!-- Collapse styling (width, label visibility) lives in .app-sidebar CSS,
-       driven by the data-collapsed attribute. -->
   <aside
     :aria-label="t('sidebar.navLabel')"
     class="app-sidebar"
