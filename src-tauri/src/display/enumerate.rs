@@ -54,7 +54,7 @@ unsafe fn enum_modes(device_wide: &[u16]) -> Vec<DisplayModeInfo> {
             .then(b.width.cmp(&a.width))
             .then(b.refresh_rate.cmp(&a.refresh_rate))
     });
-    modes.retain(|mode| mode.refresh_rate > 1); // 过滤 0/1 Hz 的无效条目
+    modes.retain(|mode| mode.refresh_rate > 1);
     modes
 }
 

@@ -20,7 +20,6 @@ pub async fn launch_game(
 ) -> Result<LaunchReport, String> {
     if let Some(patch) = &segatools {
         if let Some(keychip) = &patch.keychip {
-            // 机台编号不做格式校验，只要不为空即可启动
             if keychip.id.trim().is_empty() {
                 return Err("机台编号未填写，无法启动游戏".to_string());
             }
